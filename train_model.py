@@ -1,3 +1,4 @@
+import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -94,8 +95,11 @@ def main(csv_path="data/T_ship1.csv", epochs=50, batch_size=128, lr=1e-3):
         val_loss = evaluate(model, val_loader, loss_fn)
         print(f"Epoch {epoch:02d} | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f}")
 
-    torch.save(model.state_dict(), "model_T_predictor.pt")
-    print("Model saved to model_T_predictor.pt")
+    # Save model to models/ folder
+    os.makedirs("models", exist_ok=True)
+    save_path = os.path.join("models", "model_T_ship1.pt")
+    torch.save(model.state_dict(), save_path)
+    print(f"Model saved to {save_path}")
 
 if __name__ == "__main__":
     main()

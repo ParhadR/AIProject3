@@ -1,5 +1,5 @@
 import numpy as np
-from collections import deque
+import csv
 from src.map_generator import OPEN
 
 # Directions for movement (up, down, left, right)
@@ -47,27 +47,38 @@ def value_iteration(ship_map, max_iters=1000, tolerance=1e-3):
                         if ship_map[rx][ry] != OPEN:
                             continue
                         if (bx, by) == (rx, ry):
-                            continue  # Already 0
+                            continue
 
-                        best_value = np.inf
                         bot_neighbors = get_neighbors(bx, by, ship_map)
                         if not bot_neighbors:
                             continue
 
+                        best_value = np.inf
                         for nbx, nby in bot_neighbors:
                             rat_neighbors = get_neighbors(rx, ry, ship_map)
                             if not rat_neighbors:
                                 continue
 
                             expected = 0.0
+                            skip_action = False
                             for nrx, nry in rat_neighbors:
                                 if (nbx, nby) == (nrx, nry):
-                                    expected += 0  # Rat caught next turn
-                                else:
-                                    expected += T[nbx][nby][nrx][nry]
+                                    continue  # rat gets caught
+                                v = T[nbx][nby][nrx][nry]
+                                if not np.isfinite(v):
+                                    skip_action = True
+                                    break
+                                expected += v
+
+                            if skip_action:
+                                continue
 
                             expected /= len(rat_neighbors)
-                            best_value = min(best_value, 1 + expected)
+                            total_cost = 1 + expected
+                            best_value = min(best_value, total_cost)
+
+                        if not np.isfinite(best_value):
+                            continue  # Don't assign invalid values
 
                         new_T[bx][by][rx][ry] = best_value
                         delta = max(delta, abs(T[bx][by][rx][ry] - best_value))
@@ -80,10 +91,7 @@ def value_iteration(ship_map, max_iters=1000, tolerance=1e-3):
     return T
 
 def extract_optimal_policy(T, ship_map):
-    """
-    For each (bx, by, rx, ry), return the optimal move for the bot as a direction tuple (dx, dy).
-    Skip invalid configurations (walls).
-    """
+    """Extract optimal (dx, dy) action for each valid (bx, by, rx, ry) state."""
     D = len(ship_map)
     policy = {}
 
@@ -96,7 +104,7 @@ def extract_optimal_policy(T, ship_map):
                     if ship_map[rx][ry] != OPEN:
                         continue
                     if (bx, by) == (rx, ry):
-                        continue  # Terminal state — no move needed
+                        continue
 
                     best_action = None
                     best_value = float('inf')
@@ -113,11 +121,18 @@ def extract_optimal_policy(T, ship_map):
                             continue
 
                         expected = 0.0
+                        skip = False
                         for nrx, nry in rat_neighbors:
                             if (nbx, nby) == (nrx, nry):
-                                expected += 0  # Immediate capture
-                            else:
-                                expected += T[nbx][nby][nrx][nry]
+                                continue
+                            v = T[nbx][nby][nrx][nry]
+                            if not np.isfinite(v):
+                                skip = True
+                                break
+                            expected += v
+
+                        if skip:
+                            continue
 
                         expected /= len(rat_neighbors)
                         total_cost = 1 + expected
@@ -132,10 +147,7 @@ def extract_optimal_policy(T, ship_map):
     return policy
 
 def find_max_T_state(T, ship_map):
-    """
-    Find the (bx, by, rx, ry) configuration with the maximum expected time T.
-    Returns: ((bx, by, rx, ry), max_value)
-    """
+    """Return (bx, by, rx, ry) state with the maximum finite T value."""
     D = len(ship_map)
     max_val = -1
     max_state = None
@@ -146,25 +158,18 @@ def find_max_T_state(T, ship_map):
                 continue
             for rx in range(D):
                 for ry in range(D):
-                    if ship_map[rx][ry] != OPEN:
+                    if ship_map[rx][ry] != OPEN or (bx, by) == (rx, ry):
                         continue
-                    if (bx, by) == (rx, ry):
-                        continue  # T = 0 in this case
 
                     val = T[bx][by][rx][ry]
-                    if val > max_val:
+                    if np.isfinite(val) and val > max_val:
                         max_val = val
                         max_state = (bx, by, rx, ry)
 
     return max_state, max_val
 
-import csv
-
 def export_T_to_csv(T, ship_map, filepath="T_dataset.csv"):
-    """
-    Export all valid (bx, by, rx, ry) → T mappings to a CSV file.
-    Columns: bx, by, rx, ry, T
-    """
+    """Save all valid finite (bx, by, rx, ry, T) records to a CSV."""
     D = len(ship_map)
     with open(filepath, mode="w", newline="") as file:
         writer = csv.writer(file)
@@ -179,7 +184,7 @@ def export_T_to_csv(T, ship_map, filepath="T_dataset.csv"):
                         if ship_map[rx][ry] != OPEN:
                             continue
                         val = T[bx][by][rx][ry]
-                        if not np.isinf(val):  # Skip unreachable
+                        if np.isfinite(val):
                             writer.writerow([bx, by, rx, ry, val])
 
     print(f"Exported T dataset to: {filepath}")

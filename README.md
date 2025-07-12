@@ -2,11 +2,19 @@
 01:198:440:G6 INTRO ARTIFIC INTELL - Project 3: MDPs and ML
 
 ## Project Structure
-- `main.py`: Our main driver file
-- `src/`: Core logic for map generation, bots, strategies, etc.
-- `results/`: Charts, metrics, plots, etc.
+- `main_driver_project3.py`: Generates ship, runs value iteration, and exports T-values.
+- `src/`: Core logic for MDP solver, model training, and map generation.
+  - `map_generator.py`: Generates random maze-like ship maps.
+  - `mdp_solver.py`: Value iteration engine and T export.
+  - `train_model.py`: Trains ML model on T(bx, by, rx, ry) data.
+- `models/`: Stores trained PyTorch models.
+- `data/`: Stores generated CSV datasets.
+- `run_model.py`: Loads and evaluates trained models on test cases.
 
-## Setup
+---
+
+## Setup Instructions
+
 ```bash
 python3 -m venv venv
 source venv/bin/activate
