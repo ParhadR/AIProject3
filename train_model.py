@@ -6,6 +6,7 @@ from torch.utils.data import DataLoader, Dataset
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
 
 # -------------------------
 # Custom Dataset
@@ -90,9 +91,14 @@ def main(csv_path="data/T_ship1.csv", epochs=50, batch_size=128, lr=1e-3):
     optimizer = optim.Adam(model.parameters(), lr=lr)
     loss_fn = nn.MSELoss()
 
+    train_losses = []
+    val_losses = []
+
     for epoch in range(1, epochs + 1):
         train_loss = train(model, train_loader, optimizer, loss_fn)
         val_loss = evaluate(model, val_loader, loss_fn)
+        train_losses.append(train_loss)
+        val_losses.append(val_loss)
         print(f"Epoch {epoch:02d} | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f}")
 
     # Save model to models/ folder
@@ -100,6 +106,20 @@ def main(csv_path="data/T_ship1.csv", epochs=50, batch_size=128, lr=1e-3):
     save_path = os.path.join("models", "model_T_ship1.pt")
     torch.save(model.state_dict(), save_path)
     print(f"Model saved to {save_path}")
+
+    # Plot training/validation loss
+    os.makedirs("data", exist_ok=True)
+    plt.figure(figsize=(8, 5))
+    plt.plot(range(1, epochs + 1), train_losses, label="Training Loss")
+    plt.plot(range(1, epochs + 1), val_losses, label="Validation Loss")
+    plt.xlabel("Epoch")
+    plt.ylabel("MSE Loss")
+    plt.title("Training vs Validation Loss")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig("data/training_curve.png")
+    plt.show()
 
 if __name__ == "__main__":
     main()
