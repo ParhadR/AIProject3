@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
 
-# Custom Dataset
+#  Dataset for loading bx, by, rx, ry as inputs and T as target
 class TDataset(Dataset):
     def __init__(self, df):
         inputs = df[["bx", "by", "rx", "ry"]].values
@@ -25,7 +25,7 @@ class TDataset(Dataset):
         return self.X[idx], self.y[idx]
 
 
-# Model Definition
+# Another simple MLP import from PyTorch with two hidden layers
 class MLP(nn.Module):
     def __init__(self, hidden_dim=64):
         super().__init__()
@@ -41,8 +41,8 @@ class MLP(nn.Module):
         return self.model(x)
 
 
-# Training Function
 def train(model, loader, optimizer, loss_fn):
+    # Trains the model for one epoch and returns the average loss
     model.train()
     total_loss = 0
     for X, y in loader:
@@ -55,8 +55,8 @@ def train(model, loader, optimizer, loss_fn):
     return total_loss / len(loader.dataset)
 
 
-# Evaluation Function
 def evaluate(model, loader, loss_fn):
+    # Evaluate model performance on dataset
     model.eval()
     total_loss = 0
     with torch.no_grad():
@@ -67,11 +67,10 @@ def evaluate(model, loader, loss_fn):
     return total_loss / len(loader.dataset)
 
 
-# Main Script
 def main(csv_path="data/combined_T.csv", epochs=50, batch_size=128, lr=1e-3):
     df = pd.read_csv(csv_path)
 
-    # Normalize input coordinates
+    # Normalize input coordinates to [0, 1] range for stable training
     df[["bx", "by", "rx", "ry"]] /= df[["bx", "by", "rx", "ry"]].max()
 
     train_df, val_df = train_test_split(df, test_size=0.2, random_state=42)
@@ -98,12 +97,13 @@ def main(csv_path="data/combined_T.csv", epochs=50, batch_size=128, lr=1e-3):
             f"Epoch {epoch:02d} | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f}"
         )
 
+    # Save trained model weights for later use
     os.makedirs("models", exist_ok=True)
     save_path = os.path.join("models", "model_combined.pt")
     torch.save(model.state_dict(), save_path)
     print(f"Model saved to {save_path}")
 
-    # Plot loss curve
+    # Plot and save training/validation loss curves for analysis
     plt.figure(figsize=(8, 5))
     plt.plot(range(1, epochs + 1), train_losses, label="Training Loss")
     plt.plot(range(1, epochs + 1), val_losses, label="Validation Loss")

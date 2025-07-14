@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
 
-# Custom Dataset
+#  Dataset for loading input features and targets from DataFrame
 class TDataset(Dataset):
     def __init__(self, df):
         inputs = df[["bx", "by", "rx", "ry"]].values
@@ -25,7 +25,7 @@ class TDataset(Dataset):
         return self.X[idx], self.y[idx]
 
 
-# Model Definition
+# Simple MLP model import from PyTorch for regression
 class MLP(nn.Module):
     def __init__(self, hidden_dim=64):
         super().__init__()
@@ -41,7 +41,6 @@ class MLP(nn.Module):
         return self.model(x)
 
 
-# Training Function
 def train(model, loader, optimizer, loss_fn):
     model.train()
     total_loss = 0
@@ -55,7 +54,6 @@ def train(model, loader, optimizer, loss_fn):
     return total_loss / len(loader.dataset)
 
 
-# Evaluation Function
 def evaluate(model, loader, loss_fn):
     model.eval()
     total_loss = 0
@@ -67,13 +65,13 @@ def evaluate(model, loader, loss_fn):
     return total_loss / len(loader.dataset)
 
 
-# Main Script
 def main(csv_path="data/T_ship1.csv", epochs=50, batch_size=128, lr=1e-3):
     df = pd.read_csv(csv_path)
 
-    # Normalize inputs
+    # Normalize input features to [0, 1] range
     df[["bx", "by", "rx", "ry"]] /= df[["bx", "by", "rx", "ry"]].max()
 
+    # Split data into train and validation sets
     train_df, val_df = train_test_split(df, test_size=0.2, random_state=42)
 
     train_data = TDataset(train_df)
@@ -98,12 +96,13 @@ def main(csv_path="data/T_ship1.csv", epochs=50, batch_size=128, lr=1e-3):
             f"Epoch {epoch:02d} | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f}"
         )
 
+    # Save trained model weights in /models
     os.makedirs("models", exist_ok=True)
     save_path = os.path.join("models", "model_T_ship1.pt")
     torch.save(model.state_dict(), save_path)
     print(f"Model saved to {save_path}")
 
-    # Plot training/validation loss
+    # Plot and save training/validation loss curves
     os.makedirs("data", exist_ok=True)
     plt.figure(figsize=(8, 5))
     plt.plot(range(1, epochs + 1), train_losses, label="Training Loss")

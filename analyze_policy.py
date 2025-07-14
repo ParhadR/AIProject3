@@ -46,7 +46,7 @@ match_percent = (matches / total) * 100
 print(f"Greedy matches optimal in {match_percent:.2f}% of configurations.")
 
 # May delete this:
-# Save mismatches for inspection (circle back to this later)
+# Save mismatches for inspection (we will circle back to this later)
 if diffs:
     pd.DataFrame(diffs).to_csv("data/mismatched_policy_rows.csv", index=False)
     print(f" Any mismatches saved to: data/mismatched_policy_rows.csv")
