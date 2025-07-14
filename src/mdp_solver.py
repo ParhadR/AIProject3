@@ -6,7 +6,7 @@ from src.map_generator import OPEN
 DIRECTIONS = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 
 def get_neighbors(x, y, ship_map):
-    """Return valid neighboring OPEN cells."""
+    #return valid neighboring OPEN cells
     D = len(ship_map)
     return [
         (nx, ny)
@@ -15,7 +15,7 @@ def get_neighbors(x, y, ship_map):
     ]
 
 def initialize_T(ship_map):
-    """Initialize T with base cases and invalid positions."""
+    #Initialize T with base cases and invalid positions
     D = len(ship_map)
     T = np.full((D, D, D, D), np.inf)
 
@@ -30,7 +30,7 @@ def initialize_T(ship_map):
     return T
 
 def value_iteration(ship_map, max_iters=1000, tolerance=1e-3):
-    """Compute T(bx, by, rx, ry) via value iteration."""
+    #Compute T(bx, by, rx, ry) via value iteration
     D = len(ship_map)
     T = initialize_T(ship_map)
 
@@ -91,7 +91,7 @@ def value_iteration(ship_map, max_iters=1000, tolerance=1e-3):
     return T
 
 def extract_optimal_policy(T, ship_map):
-    """Extract optimal (dx, dy) action for each valid (bx, by, rx, ry) state."""
+    #Extract optimal (dx, dy) action for each valid (bx, by, rx, ry) state
     D = len(ship_map)
     policy = {}
 
@@ -147,7 +147,7 @@ def extract_optimal_policy(T, ship_map):
     return policy
 
 def find_max_T_state(T, ship_map):
-    """Return (bx, by, rx, ry) state with the maximum finite T value."""
+    #Return (bx, by, rx, ry) state with the maximum finite T value
     D = len(ship_map)
     max_val = -1
     max_state = None
@@ -169,7 +169,7 @@ def find_max_T_state(T, ship_map):
     return max_state, max_val
 
 def export_T_to_csv(T, ship_map, filepath="T_dataset.csv"):
-    """Save all valid finite (bx, by, rx, ry, T) records to a CSV."""
+    #Save all valid finite (bx, by, rx, ry, T) records to a CSV
     D = len(ship_map)
     with open(filepath, mode="w", newline="") as file:
         writer = csv.writer(file)

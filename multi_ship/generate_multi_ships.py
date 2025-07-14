@@ -3,18 +3,15 @@ import csv
 from src.map_generator import generate_ship
 from src.mdp_solver import value_iteration, export_T_to_csv
 
-# -----------------------------
-# Config
-# -----------------------------
-NUM_SHIPS = 5  # You can change this
+
+NUM_SHIPS = 5  
 D = 30
 P_FACTOR = 0.5
 OUTPUT_DIR = "data"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# -----------------------------
 # Generate multiple ships and export T-values
-# -----------------------------
+
 def generate_multiple_T_datasets():
     for i in range(1, NUM_SHIPS + 1):
         print(f"\n🚢 Generating ship {i}/{NUM_SHIPS}...")
@@ -29,7 +26,7 @@ def generate_multiple_T_datasets():
         print(f"💾 Exporting T-values to {csv_filename}...")
         export_T_to_csv(T, ship_map, filepath=csv_path)
 
-    print(f"\n✅ Generated and saved T-values for {NUM_SHIPS} ships.")
+    print(f"\nGenerated and saved T-values for {NUM_SHIPS} ships.")
 
 if __name__ == "__main__":
     generate_multiple_T_datasets()

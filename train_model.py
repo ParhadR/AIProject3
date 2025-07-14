@@ -8,9 +8,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
-# -------------------------
 # Custom Dataset
-# -------------------------
 class TDataset(Dataset):
     def __init__(self, df):
         inputs = df[["bx", "by", "rx", "ry"]].values
@@ -25,9 +23,7 @@ class TDataset(Dataset):
     def __getitem__(self, idx):
         return self.X[idx], self.y[idx]
 
-# -------------------------
 # Model Definition
-# -------------------------
 class MLP(nn.Module):
     def __init__(self, hidden_dim=64):
         super().__init__()
@@ -42,9 +38,7 @@ class MLP(nn.Module):
     def forward(self, x):
         return self.model(x)
 
-# -------------------------
 # Training Function
-# -------------------------
 def train(model, loader, optimizer, loss_fn):
     model.train()
     total_loss = 0
@@ -57,9 +51,7 @@ def train(model, loader, optimizer, loss_fn):
         total_loss += loss.item() * len(X)
     return total_loss / len(loader.dataset)
 
-# -------------------------
-# Evaluation Function
-# -------------------------
+#Evaluation Function
 def evaluate(model, loader, loss_fn):
     model.eval()
     total_loss = 0
@@ -70,13 +62,11 @@ def evaluate(model, loader, loss_fn):
             total_loss += loss.item() * len(X)
     return total_loss / len(loader.dataset)
 
-# -------------------------
-# Main Script
-# -------------------------
+#Main Script
 def main(csv_path="data/T_ship1.csv", epochs=50, batch_size=128, lr=1e-3):
     df = pd.read_csv(csv_path)
 
-    # Normalize inputs (optional)
+    #Normalize inputs
     df[["bx", "by", "rx", "ry"]] /= df[["bx", "by", "rx", "ry"]].max()
 
     train_df, val_df = train_test_split(df, test_size=0.2, random_state=42)
@@ -101,13 +91,12 @@ def main(csv_path="data/T_ship1.csv", epochs=50, batch_size=128, lr=1e-3):
         val_losses.append(val_loss)
         print(f"Epoch {epoch:02d} | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f}")
 
-    # Save model to models/ folder
     os.makedirs("models", exist_ok=True)
     save_path = os.path.join("models", "model_T_ship1.pt")
     torch.save(model.state_dict(), save_path)
     print(f"Model saved to {save_path}")
 
-    # Plot training/validation loss
+    #Plot training/validation loss
     os.makedirs("data", exist_ok=True)
     plt.figure(figsize=(8, 5))
     plt.plot(range(1, epochs + 1), train_losses, label="Training Loss")

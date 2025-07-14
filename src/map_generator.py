@@ -1,11 +1,10 @@
 import random
 
-# cell states
 BLOCKED = "blocked_state"
 OPEN = "open_state"
 
 def generate_ship(D, p_factor):
-    # D x D grid with BLOCKED cells
+    #D D grid with BLOCKED cells
     grid = [[BLOCKED for _ in range(D)] for _ in range(D)]
 
     # Pick a cell at random to start maze (but not on edge)
@@ -24,7 +23,7 @@ def generate_ship(D, p_factor):
             if 0 <= x + dx < D and 0 <= y + dy < D and grid[x + dx][y + dy] == OPEN
         )
 
-    # list of all current dead ends (open cells with 1 open neighbor)
+    #list of all current dead ends (open cells with 1 open neighbor)
     def find_dead_ends():
         dead_ends = []
         for x in range(1, D - 1):
@@ -66,10 +65,10 @@ def generate_ship(D, p_factor):
     current_dead_ends = len(initial_dead_ends)
 
     while current_dead_ends > target_dead_ends and current_dead_ends > 0:
-        # Pick a random dead end
+        #Pick a random dead end
         dead_end = random.choice(find_dead_ends())
 
-        # Get any blocked neighbor that could be opened
+        #Get any blocked neighbor that could be opened
         blocked_neighbors = get_blocked_neighbors(dead_end[0], dead_end[1])
         if blocked_neighbors:
             cell_to_open = random.choice(blocked_neighbors)
@@ -78,4 +77,4 @@ def generate_ship(D, p_factor):
         # Update dead end count
         current_dead_ends = len(find_dead_ends())
 
-    return grid  # Final maze/grid structure
+    return grid  #Final maze/grid structure
