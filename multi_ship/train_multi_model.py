@@ -8,6 +8,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
+
 # Custom Dataset
 class TDataset(Dataset):
     def __init__(self, df):
@@ -23,6 +24,7 @@ class TDataset(Dataset):
     def __getitem__(self, idx):
         return self.X[idx], self.y[idx]
 
+
 # Model Definition
 class MLP(nn.Module):
     def __init__(self, hidden_dim=64):
@@ -32,11 +34,12 @@ class MLP(nn.Module):
             nn.ReLU(),
             nn.Linear(hidden_dim, hidden_dim),
             nn.ReLU(),
-            nn.Linear(hidden_dim, 1)
+            nn.Linear(hidden_dim, 1),
         )
 
     def forward(self, x):
         return self.model(x)
+
 
 # Training Function
 def train(model, loader, optimizer, loss_fn):
@@ -51,6 +54,7 @@ def train(model, loader, optimizer, loss_fn):
         total_loss += loss.item() * len(X)
     return total_loss / len(loader.dataset)
 
+
 # Evaluation Function
 def evaluate(model, loader, loss_fn):
     model.eval()
@@ -62,11 +66,12 @@ def evaluate(model, loader, loss_fn):
             total_loss += loss.item() * len(X)
     return total_loss / len(loader.dataset)
 
-#Main Script
+
+# Main Script
 def main(csv_path="data/combined_T.csv", epochs=50, batch_size=128, lr=1e-3):
     df = pd.read_csv(csv_path)
 
-    #Normalize input coordinates
+    # Normalize input coordinates
     df[["bx", "by", "rx", "ry"]] /= df[["bx", "by", "rx", "ry"]].max()
 
     train_df, val_df = train_test_split(df, test_size=0.2, random_state=42)
@@ -89,15 +94,16 @@ def main(csv_path="data/combined_T.csv", epochs=50, batch_size=128, lr=1e-3):
         val_loss = evaluate(model, val_loader, loss_fn)
         train_losses.append(train_loss)
         val_losses.append(val_loss)
-        print(f"Epoch {epoch:02d} | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f}")
-
+        print(
+            f"Epoch {epoch:02d} | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f}"
+        )
 
     os.makedirs("models", exist_ok=True)
     save_path = os.path.join("models", "model_combined.pt")
     torch.save(model.state_dict(), save_path)
     print(f"Model saved to {save_path}")
 
-    #Plot loss curve
+    # Plot loss curve
     plt.figure(figsize=(8, 5))
     plt.plot(range(1, epochs + 1), train_losses, label="Training Loss")
     plt.plot(range(1, epochs + 1), val_losses, label="Validation Loss")
@@ -110,6 +116,7 @@ def main(csv_path="data/combined_T.csv", epochs=50, batch_size=128, lr=1e-3):
     os.makedirs("data", exist_ok=True)
     plt.savefig("data/training_curve_multi.png")
     plt.show()
+
 
 if __name__ == "__main__":
     main()

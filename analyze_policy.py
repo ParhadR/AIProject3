@@ -3,7 +3,8 @@ import numpy as np
 
 policy_df = pd.read_csv("data/policy_ship1.csv")
 
-#Define the greedy direction (shortest-path) function
+
+# Define the greedy direction (shortest-path) function
 def greedy_direction(bx, by, rx, ry):
     dx = rx - bx
     dy = ry - by
@@ -15,7 +16,8 @@ def greedy_direction(bx, by, rx, ry):
         return (np.sign(dx), 0)  # prefer horizontal if equal
     return (0, 0)  # same cell
 
-#Compare greedy vs optimal actions
+
+# Compare greedy vs optimal actions
 total = 0
 matches = 0
 diffs = []
@@ -29,17 +31,22 @@ for _, row in policy_df.iterrows():
     if (dx_opt, dy_opt) == (dx_greedy, dy_greedy):
         matches += 1
     else:
-        diffs.append({
-            "bx": bx, "by": by, "rx": rx, "ry": ry,
-            "optimal_action": (dx_opt, dy_opt),
-            "greedy_action": (dx_greedy, dy_greedy)
-        })
+        diffs.append(
+            {
+                "bx": bx,
+                "by": by,
+                "rx": rx,
+                "ry": ry,
+                "optimal_action": (dx_opt, dy_opt),
+                "greedy_action": (dx_greedy, dy_greedy),
+            }
+        )
 
 match_percent = (matches / total) * 100
 print(f"Greedy matches optimal in {match_percent:.2f}% of configurations.")
 
-#May delete this:
-#Save mismatches for inspection
+# May delete this:
+# Save mismatches for inspection (circle back to this later)
 if diffs:
     pd.DataFrame(diffs).to_csv("data/mismatched_policy_rows.csv", index=False)
-    print(f"⚠️  Mismatches saved to: data/mismatched_policy_rows.csv")
+    print(f" Any mismatches saved to: data/mismatched_policy_rows.csv")
