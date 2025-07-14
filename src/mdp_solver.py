@@ -6,7 +6,6 @@ from src.map_generator import OPEN
 DIRECTIONS = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 
 def get_neighbors(x, y, ship_map):
-    #return valid neighboring OPEN cells
     D = len(ship_map)
     return [
         (nx, ny)
@@ -15,7 +14,6 @@ def get_neighbors(x, y, ship_map):
     ]
 
 def initialize_T(ship_map):
-    #Initialize T with base cases and invalid positions
     D = len(ship_map)
     T = np.full((D, D, D, D), np.inf)
 
@@ -30,12 +28,14 @@ def initialize_T(ship_map):
     return T
 
 def value_iteration(ship_map, max_iters=1000, tolerance=1e-3):
-    #Compute T(bx, by, rx, ry) via value iteration
     D = len(ship_map)
     T = initialize_T(ship_map)
 
     for iteration in range(max_iters):
         delta = 0.0
+        num_updates = 0
+        num_discoveries = 0
+        discovery_this_round = False
         new_T = T.copy()
 
         for bx in range(D):
@@ -44,9 +44,7 @@ def value_iteration(ship_map, max_iters=1000, tolerance=1e-3):
                     continue
                 for rx in range(D):
                     for ry in range(D):
-                        if ship_map[rx][ry] != OPEN:
-                            continue
-                        if (bx, by) == (rx, ry):
+                        if ship_map[rx][ry] != OPEN or (bx, by) == (rx, ry):
                             continue
 
                         bot_neighbors = get_neighbors(bx, by, ship_map)
@@ -60,17 +58,17 @@ def value_iteration(ship_map, max_iters=1000, tolerance=1e-3):
                                 continue
 
                             expected = 0.0
-                            skip_action = False
+                            skip = False
                             for nrx, nry in rat_neighbors:
                                 if (nbx, nby) == (nrx, nry):
                                     continue  # rat gets caught
                                 v = T[nbx][nby][nrx][nry]
                                 if not np.isfinite(v):
-                                    skip_action = True
+                                    skip = True
                                     break
                                 expected += v
 
-                            if skip_action:
+                            if skip:
                                 continue
 
                             expected /= len(rat_neighbors)
@@ -78,20 +76,34 @@ def value_iteration(ship_map, max_iters=1000, tolerance=1e-3):
                             best_value = min(best_value, total_cost)
 
                         if not np.isfinite(best_value):
-                            continue  # Don't assign invalid values
+                            continue
 
+                        old_val = T[bx][by][rx][ry]
                         new_T[bx][by][rx][ry] = best_value
-                        delta = max(delta, abs(T[bx][by][rx][ry] - best_value))
+
+                        if not np.isfinite(old_val):
+                            discovery_this_round = True
+                            num_discoveries += 1
+                        else:
+                            change = abs(old_val - best_value)
+                            delta = max(delta, change)
+                            num_updates += 1
+
+        # Only override delta if no finite changes occurred
+        if discovery_this_round and delta == 0.0:
+            delta = float("inf")
 
         T = new_T
-        print(f"Iteration {iteration + 1}: Δ = {delta:.4f}")
+        print(
+            f"Iteration {iteration + 1}: Δ = {delta:.4f}, updates = {num_updates}, new discoveries = {num_discoveries}"
+        )
+
         if delta < tolerance:
             break
 
     return T
 
 def extract_optimal_policy(T, ship_map):
-    #Extract optimal (dx, dy) action for each valid (bx, by, rx, ry) state
     D = len(ship_map)
     policy = {}
 
@@ -101,13 +113,11 @@ def extract_optimal_policy(T, ship_map):
                 continue
             for rx in range(D):
                 for ry in range(D):
-                    if ship_map[rx][ry] != OPEN:
-                        continue
-                    if (bx, by) == (rx, ry):
+                    if ship_map[rx][ry] != OPEN or (bx, by) == (rx, ry):
                         continue
 
                     best_action = None
-                    best_value = float('inf')
+                    best_value = float("inf")
 
                     for dx, dy in DIRECTIONS:
                         nbx, nby = bx + dx, by + dy
@@ -147,7 +157,6 @@ def extract_optimal_policy(T, ship_map):
     return policy
 
 def find_max_T_state(T, ship_map):
-    #Return (bx, by, rx, ry) state with the maximum finite T value
     D = len(ship_map)
     max_val = -1
     max_state = None
@@ -169,7 +178,6 @@ def find_max_T_state(T, ship_map):
     return max_state, max_val
 
 def export_T_to_csv(T, ship_map, filepath="T_dataset.csv"):
-    #Save all valid finite (bx, by, rx, ry, T) records to a CSV
     D = len(ship_map)
     with open(filepath, mode="w", newline="") as file:
         writer = csv.writer(file)

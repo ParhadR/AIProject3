@@ -27,7 +27,7 @@ def save_policy(policy, filepath="data/policy_ship1.csv"):
 
 
 def main():
-    print("Generating shi: ")
+    print("Generating ship map: ")
     ship_map = generate_ship(D, p_factor)
 
     print("Running value iteration: ")
