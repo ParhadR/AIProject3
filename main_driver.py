@@ -16,11 +16,11 @@ os.makedirs(output_dir, exist_ok=True)  # we want to make sure output directory 
 
 
 def save_policy(policy, filepath="data/policy_ship1.csv"):
-    """Save the extracted optimal policy to a CSV file."""
+    #Save the extracted optimal policy to a CSV file
     with open(filepath, mode="w", newline="") as file:
         writer = csv.writer(file)
         writer.writerow(["bx", "by", "rx", "ry", "dx", "dy"])
-        # Each row: bot pos, rat pos, optimal action
+        #Each row: bot pos, rat pos, optimal action
         for (bx, by, rx, ry), (dx, dy) in policy.items():
             writer.writerow([bx, by, rx, ry, dx, dy])
     print(f"Policy saved to: {filepath}")
@@ -31,13 +31,13 @@ def main():
     ship_map = generate_ship(D, p_factor)
 
     print("Running value iteration: ")
-    T = value_iteration(ship_map)  # T: expected time-to-catch for each state
+    T = value_iteration(ship_map)  #T: expected time-to-catch for each state
 
     print("Exporting T-values to CSV: ")
     export_T_to_csv(T, ship_map, filepath=f"{output_dir}/T_ship1.csv")
 
     print("Finding worst-case configuration: ")
-    # Find the state with the maximum expected time-to-catch
+    #Find the state with the maximum expected time-to-catch
     max_state, max_val = find_max_T_state(T, ship_map)
     print(f"\nWorst-case (slowest) configuration:")
     print(

@@ -8,14 +8,14 @@ from train_multi_model import MLP
 MODEL_NAME = "model_combined.pt"
 MODEL_PATH = os.path.join("models", MODEL_NAME)
 DATA_PATH = "data/combined_T.csv"
-NUM_SAMPLES = 1000  # samples for evaluation/plotting
+NUM_SAMPLES = 1000  #samples for evaluation/plotting
 
 # Load and Normalize Data
 df = pd.read_csv(DATA_PATH)
 df_norm = df.copy()
 df_norm[["bx", "by", "rx", "ry"]] /= df_norm[
     ["bx", "by", "rx", "ry"]
-].max()  # normalize only position columns
+].max()  #normalize only position columns
 
 samples = df.sample(NUM_SAMPLES, random_state=42).reset_index(drop=True)
 inputs = df_norm.loc[samples.index, ["bx", "by", "rx", "ry"]].values
@@ -26,11 +26,11 @@ model = MLP()
 model.load_state_dict(torch.load(MODEL_PATH))  # load trained weights
 model.eval()  # set model to evaluation mode
 
-# Predict
+#Predict
 with torch.no_grad():  # disables gradient calculation (not needed for inference here)
     preds = model(torch.tensor(inputs, dtype=torch.float32)).squeeze().numpy()
 
-# Report Samples
+#Report Samples
 print(f"\nPredictions from model: {MODEL_NAME}")
 for i in range(min(10, NUM_SAMPLES)):
     coords = samples.iloc[i][["bx", "by", "rx", "ry"]].tolist()
@@ -38,12 +38,12 @@ for i in range(min(10, NUM_SAMPLES)):
         f"Input: {coords}  |  True T: {true_T[i]:.2f}  |  Predicted T: {preds[i]:.2f}"
     )
 
-# Plot True vs Predicted
+#Plot True vs Predicted
 plt.figure(figsize=(6, 6))
 plt.scatter(true_T, preds, alpha=0.5, s=15)
 plt.plot(
     [true_T.min(), true_T.max()], [true_T.min(), true_T.max()], "r--"
-)  # reference line y=x
+)  #reference line y=x
 plt.xlabel("True T")
 plt.ylabel("Predicted T")
 plt.title("Predicted vs True T (Multi-Ship Model)")
