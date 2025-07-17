@@ -67,7 +67,7 @@ def evaluate(model, loader, loss_fn):
     return total_loss / len(loader.dataset)
 
 
-def main(csv_path="data/combined_T.csv", epochs=50, batch_size=128, lr=1e-3):
+def main(csv_path="data/combined_T.csv", epochs=100, batch_size=128, lr=1e-3):
     df = pd.read_csv(csv_path)
 
     # Normalize input coordinates to [0, 1] range for stable training
