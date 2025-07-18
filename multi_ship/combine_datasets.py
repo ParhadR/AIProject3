@@ -12,9 +12,11 @@ EXT = ".csv"
 def combine_T_datasets():
     all_dfs = []
     for file in sorted(os.listdir(INPUT_DIR)):
+        # only look at files that match the pattern
         if file.startswith(PREFIX) and file.endswith(EXT):
             print(f"Reading: {file}")
             df = pd.read_csv(os.path.join(INPUT_DIR, file))
+            # keep track of which file each row came from
             df["ship_id"] = file
             all_dfs.append(df)
 

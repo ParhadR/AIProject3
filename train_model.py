@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
 
-#  Dataset for loading input features and targets from DataFrame
+# custom dataset to feed bx, by, rx, ry as input and T as target
 class TDataset(Dataset):
     def __init__(self, df):
         inputs = df[["bx", "by", "rx", "ry"]].values
@@ -25,7 +25,7 @@ class TDataset(Dataset):
         return self.X[idx], self.y[idx]
 
 
-# Simple MLP model import from PyTorch for regression
+# simple MLP model import from PyTorch for regression
 class MLP(nn.Module):
     def __init__(self, hidden_dim=64):
         super().__init__()
@@ -40,7 +40,7 @@ class MLP(nn.Module):
     def forward(self, x):
         return self.model(x)
 
-
+# one training epoch — does forward pass, backprop, update weights
 def train(model, loader, optimizer, loss_fn):
     model.train()
     total_loss = 0
@@ -53,7 +53,7 @@ def train(model, loader, optimizer, loss_fn):
         total_loss += loss.item() * len(X)
     return total_loss / len(loader.dataset)
 
-
+# runs eval pass on val set (no training)
 def evaluate(model, loader, loss_fn):
     model.eval()
     total_loss = 0
@@ -64,14 +64,14 @@ def evaluate(model, loader, loss_fn):
             total_loss += loss.item() * len(X)
     return total_loss / len(loader.dataset)
 
-
+# our main training loop
 def main(csv_path="data/T_ship1.csv", epochs=100, batch_size=128, lr=1e-3):
     df = pd.read_csv(csv_path)
 
-    # Normalize input features to [0, 1] range
+    # scale input features to [0, 1] so training is more stable
     df[["bx", "by", "rx", "ry"]] /= df[["bx", "by", "rx", "ry"]].max()
 
-    # Split data into train and validation sets
+    # split into train/val
     train_df, val_df = train_test_split(df, test_size=0.2, random_state=42)
 
     train_data = TDataset(train_df)

@@ -13,20 +13,23 @@ def get_neighbors(x, y, ship_map):
         if 0 <= (nx := x + dx) < D and 0 <= (ny := y + dy) < D and ship_map[nx][ny] == OPEN
     ]
 
+# sets up the initial T array with all values 1000 except caught cases (T = 0)
 def initialize_T(ship_map):
     D = len(ship_map)
-    T = np.full((D, D, D, D), 1000.0)
+    T = np.full((D, D, D, D), 1000.0) # high default value as per Jack (TA)'s feedback
 
     for bx in range(D):
         for by in range(D):
             for rx in range(D):
                 for ry in range(D):
+                    # skip if either bot or rat starts on a wall
                     if ship_map[bx][by] != OPEN or ship_map[rx][ry] != OPEN:
                         continue
                     if (bx, by) == (rx, ry):
-                        T[bx][by][rx][ry] = 0.0  # Caught immediately
+                        T[bx][by][rx][ry] = 0.0  # already caught
     return T
 
+# runs value iteration to fill in T values with expected steps until capture
 def value_iteration(ship_map, max_iters=1000, tolerance=1e-3):
     D = len(ship_map)
     T = initialize_T(ship_map)
@@ -59,7 +62,7 @@ def value_iteration(ship_map, max_iters=1000, tolerance=1e-3):
                             expected = 0.0
                             for nrx, nry in rat_neighbors:
                                 if (nbx, nby) == (nrx, nry):
-                                    continue  # caught
+                                    continue  # caught here
                                 v = T[nbx][nby][nrx][nry]
                                 expected += v
 
@@ -72,7 +75,7 @@ def value_iteration(ship_map, max_iters=1000, tolerance=1e-3):
 
                         if old_val == 1000.0 and best_value < 1000.0:
                             num_discoveries += 1
-                            delta = float("inf")
+                            delta = float("inf") # new reachable state found
                         else:
                             change = abs(old_val - best_value)
                             if change > delta:
@@ -84,7 +87,8 @@ def value_iteration(ship_map, max_iters=1000, tolerance=1e-3):
         print(
             f"Iteration {iteration + 1}: Δ = {delta:.4f}, updates = {num_updates}, new discoveries = {num_discoveries}"
         )
-
+        
+        # stop if changes are small enough (and not still discovering new states)
         if delta != float("inf") and delta < tolerance:
             break
 
@@ -135,6 +139,7 @@ def extract_optimal_policy(T, ship_map):
 
     return policy
 
+# finds the state (bx,by,rx,ry) with the highest non-infinite T value
 def find_max_T_state(T, ship_map):
     D = len(ship_map)
     max_val = -1

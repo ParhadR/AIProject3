@@ -4,7 +4,7 @@ import numpy as np
 policy_df = pd.read_csv("data/policy_ship1.csv")
 
 
-# Define the greedy direction (shortest-path) function
+# figures out what direction the bot would move if it just tried to get closer to the rat
 def greedy_direction(bx, by, rx, ry):
     dx = rx - bx
     dy = ry - by
@@ -42,6 +42,7 @@ for _, row in policy_df.iterrows():
             }
         )
 
+# show percent of times greedy matched optimal
 match_percent = (matches / total) * 100
 print(f"Greedy matches optimal in {match_percent:.2f}% of configurations.")
 

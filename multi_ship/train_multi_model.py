@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
 
-#  Dataset for loading bx, by, rx, ry as inputs and T as target
+# custom dataset to load bx, by, rx, ry as input and T as label
 class TDataset(Dataset):
     def __init__(self, df):
         inputs = df[["bx", "by", "rx", "ry"]].values
@@ -70,7 +70,7 @@ def evaluate(model, loader, loss_fn):
 def main(csv_path="data/combined_T.csv", epochs=100, batch_size=128, lr=1e-3):
     df = pd.read_csv(csv_path)
 
-    # Normalize input coordinates to [0, 1] range for stable training
+    # scale inputs to 0–1 range
     df[["bx", "by", "rx", "ry"]] /= df[["bx", "by", "rx", "ry"]].max()
 
     train_df, val_df = train_test_split(df, test_size=0.2, random_state=42)
@@ -87,7 +87,8 @@ def main(csv_path="data/combined_T.csv", epochs=100, batch_size=128, lr=1e-3):
 
     train_losses = []
     val_losses = []
-
+    
+    # save model weights
     for epoch in range(1, epochs + 1):
         train_loss = train(model, train_loader, optimizer, loss_fn)
         val_loss = evaluate(model, val_loader, loss_fn)
